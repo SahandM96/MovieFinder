@@ -45,7 +45,7 @@ def login(request):
     token = generate_access_token(user)
     response.set_cookie(key='jwt', value=token, httponly=True)
     response.data = {
-        'jwt': token
+        'message': "You are logged in"
     }
     return response
 
@@ -54,11 +54,28 @@ class AuthenticatedUser(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self,request):
+    def get(self, request):
         serializer = UserSerializer(request.user)
         return Response({
-            'data':serializer.data
+            'data': serializer.data
         })
+
+
+@api_view(['POST'])
+def logout(request):
+    response = Response()
+    if request.COOKIES.get('jwt'):
+        response.delete_cookie(key='jwt')
+        response.data = {
+            'message': 'logged out'
+        }
+        return response
+
+    response.data = {
+        'message': 'you are not logged in'
+    }
+    return response
+
 
 @api_view(['GET'])
 def users(request):
